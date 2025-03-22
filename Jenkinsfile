@@ -104,7 +104,44 @@ pipeline {
             }
         }
 
-        // Add the new stage here
+        // Debugging steps
+        stage('Check Python Version') {
+            steps {
+                sh '''
+                    echo "Python version:"
+                    python3 --version
+                '''
+            }
+        }
+
+        stage('Check boto3 Installation') {
+            steps {
+                sh '''
+                    echo "Checking boto3 installation..."
+                    python3 -c "import boto3; print(boto3.__version__)"
+                '''
+            }
+        }
+
+        stage('Verify AWS Credentials') {
+            steps {
+                sh '''
+                    echo "Checking AWS credentials..."
+                    aws sts get-caller-identity
+                '''
+            }
+        }
+
+        stage('Debug Dynamic Inventory Script') {
+            steps {
+                sh '''
+                    echo "Running dynamic inventory script..."
+                    cd ansible
+                    python3 dynamic_inventory.py
+                '''
+            }
+        }
+
         stage('Make Dynamic Inventory Executable') {
             when {
                 expression { env.INSTALL_ACTION == 'Install' }
@@ -124,10 +161,8 @@ pipeline {
             steps {
                 sh '''
                 cd ansible
-                echo "Installing boto3 on Jenkins server..."
-                pip3 install boto3
                 ls -l dynamic_inventory.py  # Debugging: Ensure inventory file exists
-                ./dynamic_inventory.py # Run the script
+                ansible-inventory -i dynamic_inventory.py --list
                 '''
             }
         }
@@ -151,7 +186,7 @@ pipeline {
             steps {
                 sh '''
                 cd ansible
-                ansible-playbook dynamic_inventory.py site.yml
+                ansible-playbook -i dynamic_inventory.py site.yml
                 '''
             }
         }
