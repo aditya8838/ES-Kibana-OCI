@@ -124,8 +124,10 @@ pipeline {
             steps {
                 sh '''
                 cd ansible
+                echo "Installing boto3 on Jenkins server..."
+                pip3 install boto3
                 ls -l dynamic_inventory.py  # Debugging: Ensure inventory file exists
-                ansible-inventory -i dynamic_inventory.py --list
+                ./dynamic_inventory.py # Run the script
                 '''
             }
         }
@@ -149,7 +151,7 @@ pipeline {
             steps {
                 sh '''
                 cd ansible
-                ansible-playbook -i dynamic_inventory.py site.yml
+                ansible-playbook dynamic_inventory.py site.yml
                 '''
             }
         }
