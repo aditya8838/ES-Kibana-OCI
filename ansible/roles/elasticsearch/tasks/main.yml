@@ -1,0 +1,64 @@
+---
+- name: Install Java
+  apt:
+    name: openjdk-8-jdk
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Set JAVA_HOME environment variable
+  lineinfile:
+    path: /home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch
+    regexp: '^export JAVA_HOME='
+    line: 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64'
+    insertafter: '^#!\/bin\/bash'
+  become: yes
+
+- name: Download Elasticsearch
+  get_url:
+    url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.17-linux-x86_64.tar.gz
+    dest: /tmp/elasticsearch-7.17.17-linux-x86_64.tar.gz
+
+- name: Extract Elasticsearch
+  unarchive:
+    src: /tmp/elasticsearch-7.17.17-linux-x86_64.tar.gz
+    dest: /home/ubuntu/
+    remote_src: yes
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Set ownership for Elasticsearch directory
+  file:
+    path: /home/ubuntu/elasticsearch-7.17.17
+    owner: ubuntu
+    group: ubuntu
+    recurse: yes
+  become: yes
+
+- name: Set permissions for Elasticsearch config directory
+  file:
+    path: /home/ubuntu/elasticsearch-7.17.17/config
+    mode: '0755'
+    recurse: yes
+  become: yes
+
+- name: Set permissions for Elasticsearch keystore
+  file:
+    path: /home/ubuntu/elasticsearch-7.17.17/config/elasticsearch.keystore
+    mode: '0600'
+  become: yes
+
+- name: Configure Elasticsearch
+  template:
+    src: elasticsearch.yml.j2
+    dest: /home/ubuntu/elasticsearch-7.17.17/config/elasticsearch.yml
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Start Elasticsearch
+  shell: nohup /home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch &
+  args:
+    chdir: /home/ubuntu/elasticsearch-7.17.17
+  become: yes

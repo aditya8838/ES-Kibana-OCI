@@ -1,0 +1,5 @@
+cluster.name: "my-cluster"
+node.name: "{{ ansible_hostname }}"
+network.host: 0.0.0.0
+discovery.seed_hosts: {{ groups['elasticsearch'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}
+cluster.initial_master_nodes: {{ groups['elasticsearch'] | map('extract', hostvars, ['ansible_hostname']) | list }}

@@ -1,0 +1,43 @@
+---
+- name: Download Kibana
+  get_url:
+    url: https://artifacts.elastic.co/downloads/kibana/kibana-7.17.17-linux-x86_64.tar.gz
+    dest: /tmp/kibana-7.17.17-linux-x86_64.tar.gz
+
+- name: Extract Kibana
+  unarchive:
+    src: /tmp/kibana-7.17.17-linux-x86_64.tar.gz
+    dest: /home/ubuntu/
+    remote_src: yes
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Set ownership for Kibana directory
+  file:
+    path: /home/ubuntu/kibana-7.17.17-linux-x86_64
+    owner: ubuntu
+    group: ubuntu
+    recurse: yes
+  become: yes  # Run with sudo
+
+- name: Set permissions for Kibana data directory
+  file:
+    path: /home/ubuntu/kibana-7.17.17-linux-x86_64/data
+    mode: '0755'
+    recurse: yes
+  become: yes  # Run with sudo
+
+- name: Configure Kibana
+  template:
+    src: kibana.yml.j2
+    dest: /home/ubuntu/kibana-7.17.17-linux-x86_64/config/kibana.yml
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Start Kibana
+  shell: nohup /home/ubuntu/kibana-7.17.17-linux-x86_64/bin/kibana &
+  args:
+    chdir: /home/ubuntu/kibana-7.17.17-linux-x86_64
+  become: yes  # Run with sudo

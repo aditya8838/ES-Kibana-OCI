@@ -1,0 +1,10 @@
+---
+- hosts: elasticsearch
+  become: yes  # Run tasks with sudo
+  roles:
+    - elasticsearch
+
+- hosts: kibana
+  become: yes  # Run tasks with sudo
+  roles:
+    - kibana
