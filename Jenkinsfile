@@ -104,6 +104,19 @@ pipeline {
             }
         }
 
+        // Add the new stage here
+        stage('Make Dynamic Inventory Executable') {
+            when {
+                expression { env.INSTALL_ACTION == 'Install' }
+            }
+            steps {
+                sh '''
+                cd ansible
+                chmod +x dynamic_inventory.py
+                '''
+            }
+        }
+
         stage('Check Ansible Inventory') {
             when {
                 expression { env.INSTALL_ACTION == 'Install' }
@@ -166,7 +179,7 @@ pipeline {
                     mimeType: 'text/html',
                     subject: "✅ SUCCESS: ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
                     body: emailBody,
-                    to: 'aditya.tripathi998@gmail.com'
+                    to: 'adityatripathi022@gmail.com'
                 )
             }
         }
@@ -195,7 +208,7 @@ pipeline {
                     mimeType: 'text/html',
                     subject: "❌ FAILED: ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
                     body: emailBody,
-                    to: 'aditya.tripathi998@gmail.com'
+                    to: 'adityatripathi022@gmail.com'
                 )
             }
         }
