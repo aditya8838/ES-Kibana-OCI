@@ -89,7 +89,7 @@ pipeline {
                 script {
                     env.INSTALL_ACTION = input message: 'Infrastructure built successfully. Choose to install or skip.', parameters: [
                         choice(name: 'INSTALL_ACTION', choices: ['Install', 'Skip'], description: 'Install ES & kibana or Skip')
-                    ]
+                    ]  
                 }
             }
         }
@@ -101,6 +101,19 @@ pipeline {
             steps {
                 echo "⏳ Waiting for EC2 instances to be ready..."
                 sleep(time: 60, unit: 'SECONDS')
+            }
+        }
+
+        // Add the new stage here
+        stage('Make Dynamic Inventory Executable') {
+            when {
+                expression { env.INSTALL_ACTION == 'Install' }
+            }
+            steps {
+                sh '''
+                cd ansible
+                chmod +x dynamic_inventory.py
+                '''
             }
         }
 
@@ -166,7 +179,7 @@ pipeline {
                     mimeType: 'text/html',
                     subject: "✅ SUCCESS: ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
                     body: emailBody,
-                    to: 'adityatripathi022@gmail.com'
+                    to: 'aditya.tripathi998@gmail.com'
                 )
             }
         }
@@ -184,7 +197,7 @@ pipeline {
                                 <strong>Triggered By:</strong> ${currentBuild.getBuildCauses().shortDescription}
                             </p>
                             <p style="color: #721c24; font-size: 16px; font-weight: bold;">The job has failed. ❌</p>
-                            <p style="color: #721c24; font-size: 16px;"><strong>Check logs here:</strong>
+                            <p style="color: #721c24; font-size: 16px;"><strong>Check logs here:</strong> 
                                 <a href="${env.BUILD_URL}" style="color:#155724; text-decoration:none; font-weight:bold;">Click Here To View Build Logs</a>
                             </p>
                         </div>
@@ -195,7 +208,7 @@ pipeline {
                     mimeType: 'text/html',
                     subject: "❌ FAILED: ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
                     body: emailBody,
-                    to: 'adityatripathi022@gmail.com'
+                    to: 'aditya.tripathi998@gmail.com'
                 )
             }
         }
