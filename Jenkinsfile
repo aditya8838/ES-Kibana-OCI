@@ -89,7 +89,7 @@ pipeline {
                 script {
                     env.INSTALL_ACTION = input message: 'Infrastructure built successfully. Choose to install or skip.', parameters: [
                         choice(name: 'INSTALL_ACTION', choices: ['Install', 'Skip'], description: 'Install ES & kibana or Skip')
-                    ]  
+                    ]
                 }
             }
         }
@@ -101,56 +101,6 @@ pipeline {
             steps {
                 echo "⏳ Waiting for EC2 instances to be ready..."
                 sleep(time: 60, unit: 'SECONDS')
-            }
-        }
-
-        // Debugging steps
-        stage('Check Python Version') {
-            steps {
-                sh '''
-                    echo "Python version:"
-                    python3 --version
-                '''
-            }
-        }
-
-        stage('Check boto3 Installation') {
-            steps {
-                sh '''
-                    echo "Checking boto3 installation..."
-                    python3 -c "import boto3; print(boto3.__version__)"
-                '''
-            }
-        }
-
-        stage('Verify AWS Credentials') {
-            steps {
-                sh '''
-                    echo "Checking AWS credentials..."
-                    aws sts get-caller-identity
-                '''
-            }
-        }
-
-        stage('Debug Dynamic Inventory Script') {
-            steps {
-                sh '''
-                    echo "Running dynamic inventory script..."
-                    cd ansible
-                    python3 dynamic_inventory.py
-                '''
-            }
-        }
-
-        stage('Make Dynamic Inventory Executable') {
-            when {
-                expression { env.INSTALL_ACTION == 'Install' }
-            }
-            steps {
-                sh '''
-                cd ansible
-                chmod +x dynamic_inventory.py
-                '''
             }
         }
 
@@ -234,7 +184,7 @@ pipeline {
                                 <strong>Triggered By:</strong> ${currentBuild.getBuildCauses().shortDescription}
                             </p>
                             <p style="color: #721c24; font-size: 16px; font-weight: bold;">The job has failed. ❌</p>
-                            <p style="color: #721c24; font-size: 16px;"><strong>Check logs here:</strong> 
+                            <p style="color: #721c24; font-size: 16px;"><strong>Check logs here:</strong>
                                 <a href="${env.BUILD_URL}" style="color:#155724; text-decoration:none; font-weight:bold;">Click Here To View Build Logs</a>
                             </p>
                         </div>
