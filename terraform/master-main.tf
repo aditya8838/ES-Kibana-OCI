@@ -58,7 +58,7 @@ module "security_groups" {
 
 module "ec2" {
   source            = "./modules/ec2"
-  ami_id            = "ami-0f5ee92e2d63afc18" # Ubuntu 22.04 LTS
+  ami_id            = "ami-0eed9719f6b0e45ad" # Ubuntu 22.04 LTS
   instance_type     = "t2.medium"
   key_name          = "testkey"
   private_subnet1_id = module.subnet.private_subnet1_id
