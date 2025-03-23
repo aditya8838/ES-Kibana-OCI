@@ -100,7 +100,7 @@ pipeline {
             }
             steps {
                 echo "⏳ Waiting for EC2 instances to be ready..."
-                sleep(time: 60, unit: 'SECONDS')
+                sleep(time: 120, unit: 'SECONDS')
             }
         }
 
