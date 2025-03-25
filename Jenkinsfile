@@ -100,7 +100,7 @@ pipeline {
             }
             steps {
                 echo "⏳ Waiting for EC2 instances to be ready..."
-                sleep(time: 60, unit: 'SECONDS')
+                sleep(time: 10, unit: 'SECONDS')
             }
         }
 
@@ -146,40 +146,31 @@ pipeline {
                         python3 dynamic_inventory.py --list | jq -r '.elasticsearch.hosts[]'
                     ''', returnStdout: true).trim().split('\n')
                     
-                    // Wait for SSH to be available on all hosts
-                    def sshReady = false
-                    while (!sshReady) {
-                        sshReady = true
-                        hosts.each { host ->
-                            def status = sh(script: """
-                                if nc -zv -w 5 ${host} 22; then
-                                    ssh-keyscan ${host} >> ~/.ssh/known_hosts
-                                    echo "ready"
-                                else
-                                    echo "not ready"
+                    // First verify network connectivity to port 22
+                    echo "Verifying network connectivity to instances..."
+                    hosts.each { host ->
+                        retry(3) {
+                            timeout(time: 2, unit: 'MINUTES') {
+                                sh """
+                                echo "Testing connection to ${host}..."
+                                if ! nc -zv -w 5 ${host} 22; then
+                                    echo "ERROR: Cannot reach ${host} on port 22"
+                                    exit 1
                                 fi
-                            """, returnStatus: true)
-                            
-                            if (status != 0) {
-                                sshReady = false
-                                echo "Host ${host} not ready for SSH"
+                                """
                             }
-                        }
-                        
-                        if (!sshReady) {
-                            sleep(30)
                         }
                     }
                     
-                    // Install dependencies
+                    // Install dependencies with proper SSH options
                     sh '''
                     cd ansible
                     ansible all -i dynamic_inventory.py -m raw \
                       -a "apt update -y && apt install -y python3 python3-pip python3-six" \
                       --become \
-                      -u ubuntu \
-                      --private-key=~/.ssh/your-key.pem \
-                      -e ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+                      --user=ubuntu \
+                      --private-key=/var/lib/jenkins/.ssh/your-key.pem \
+                      -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"'
                     '''
                 }
             }
