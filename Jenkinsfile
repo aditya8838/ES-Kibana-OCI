@@ -132,37 +132,58 @@ pipeline {
             }
             steps {
                 script {
-                    // First verify SSH connectivity
+                    // Create SSH directory if it doesn't exist
+                    sh '''
+                    mkdir -p ~/.ssh
+                    chmod 700 ~/.ssh
+                    touch ~/.ssh/known_hosts
+                    chmod 600 ~/.ssh/known_hosts
+                    '''
+                    
+                    // Get hosts from inventory
                     def hosts = sh(script: '''
                         cd ansible
                         python3 dynamic_inventory.py --list | jq -r '.elasticsearch.hosts[]'
                     ''', returnStdout: true).trim().split('\n')
                     
-                    hosts.each { host ->
-                        retry(3) {
-                            timeout(time: 2, unit: 'MINUTES') {
-                                sh """
-                                echo "Testing SSH connection to ${host}..."
-                                ssh-keyscan ${host} >> ~/.ssh/known_hosts
-                                nc -zv -w 5 ${host} 22
-                                """
+                    // Wait for SSH to be available on all hosts
+                    def sshReady = false
+                    while (!sshReady) {
+                        sshReady = true
+                        hosts.each { host ->
+                            def status = sh(script: """
+                                if nc -zv -w 5 ${host} 22; then
+                                    ssh-keyscan ${host} >> ~/.ssh/known_hosts
+                                    echo "ready"
+                                else
+                                    echo "not ready"
+                                fi
+                            """, returnStatus: true)
+                            
+                            if (status != 0) {
+                                sshReady = false
+                                echo "Host ${host} not ready for SSH"
                             }
+                        }
+                        
+                        if (!sshReady) {
+                            sleep(30)
                         }
                     }
                     
-                    // Now run the installation
+                    // Install dependencies
                     sh '''
                     cd ansible
-                    ansible all -i dynamic_inventory.py -m raw -a "apt update -y && apt install -y python3 python3-pip python3-six" --become \
-                      -e "ansible_ssh_private_key_file=~/.ssh/your-key.pem" \
-                      -e "ansible_user=ubuntu" \
+                    ansible all -i dynamic_inventory.py -m raw \
+                      -a "apt update -y && apt install -y python3 python3-pip python3-six" \
+                      --become \
                       -u ubuntu \
-                      --private-key=~/.ssh/your-key.pem
+                      --private-key=~/.ssh/your-key.pem \
+                      -e ansible_ssh_common_args='-o StrictHostKeyChecking=no'
                     '''
                 }
             }
         }
-
         stage('Run Ansible Playbook') {
             when {
                 expression { env.INSTALL_ACTION == 'Install' }
