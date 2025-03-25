@@ -1,3 +1,14 @@
+resource "aws_instance" "jumphost" {
+  ami                    = var.jumphost_ami_id
+  instance_type          = "t2.micro"
+  subnet_id              = var.public_subnet1_id
+  key_name               = var.key_name
+  vpc_security_group_ids = [var.jumphost_sg_id]
+  tags = {
+    Name = "jumphost"
+  }
+}
+
 resource "aws_instance" "elasticsearch1" {
   ami           = var.ami_id
   instance_type = var.instance_type
