@@ -131,50 +131,17 @@ pipeline {
                 expression { env.INSTALL_ACTION == 'Install' }
             }
             steps {
-                script {
-                    // Create SSH directory if it doesn't exist
-                    sh '''
-                    mkdir -p ~/.ssh
-                    chmod 700 ~/.ssh
-                    touch ~/.ssh/known_hosts
-                    chmod 600 ~/.ssh/known_hosts
-                    '''
-                    
-                    // Get hosts from inventory
-                    def hosts = sh(script: '''
-                        cd ansible
-                        python3 dynamic_inventory.py --list | jq -r '.elasticsearch.hosts[]'
-                    ''', returnStdout: true).trim().split('\n')
-                    
-                    // First verify network connectivity to port 22
-                    echo "Verifying network connectivity to instances..."
-                    hosts.each { host ->
-                        retry(3) {
-                            timeout(time: 2, unit: 'MINUTES') {
-                                sh """
-                                echo "Testing connection to ${host}..."
-                                if ! nc -zv -w 5 ${host} 22; then
-                                    echo "ERROR: Cannot reach ${host} on port 22"
-                                    exit 1
-                                fi
-                                """
-                            }
-                        }
-                    }
-                    
-                    // Install dependencies with proper SSH options
-                    sh '''
-                    cd ansible
-                    ansible all -i dynamic_inventory.py -m raw \
-                      -a "apt update -y && apt install -y python3 python3-pip python3-six" \
-                      --become \
-                      --user=ubuntu \
-                      --private-key=/var/lib/jenkins/.ssh/your-key.pem \
-                      -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"'
-                    '''
-                }
+                sh '''
+                cd ansible
+                # Use python3 to explicitly execute the inventory script
+                ansible all -i dynamic_inventory.py -m raw -a "apt update -y && apt install -y python3 python3-pip python3-six" --become
+                
+                # Verify Python installation
+                ansible all -i dynamic_inventory.py -m raw -a "python3 --version && pip3 --version" --become
+                '''
             }
         }
+
         stage('Run Ansible Playbook') {
             when {
                 expression { env.INSTALL_ACTION == 'Install' }
