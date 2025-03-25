@@ -13,6 +13,11 @@ variable "key_name" {
   type        = string
 }
 
+variable "public_subnet1_id" {
+  description = "ID of the first private subnet"
+  type        = string
+}
+
 variable "private_subnet1_id" {
   description = "ID of the first private subnet"
   type        = string
@@ -31,4 +36,11 @@ variable "elastic_sg_id" {
 variable "k_sg_id" {
   description = "ID of the Kibana security group"
   type        = string
+}
+
+variable "key_name" {
+  default = "project-psql-key"
+}
+variable "key_file_path" {
+  default = "/var/lib/jenkins/workspace/project-psql-key.pem"
 }
