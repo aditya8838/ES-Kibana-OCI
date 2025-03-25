@@ -1,11 +1,31 @@
 resource "aws_instance" "jumphost" {
   ami                    = var.jumphost_ami_id
-  instance_type          = "t2.micro"
-  subnet_id              = var.public_subnet1_id
+  instance_type          = var.instance_type
   key_name               = var.key_name
+  subnet_id              = var.public_subnet1_id
   vpc_security_group_ids = [var.jumphost_sg_id]
+  associate_public_ip_address = true
+
   tags = {
     Name = "jumphost"
+  }
+
+  provisioner "file" {
+    source      = var.key_file_path
+    destination = "/home/ubuntu/testkey.pem"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod 400 /home/ubuntu/testkey.pem"
+    ]
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file(var.key_file_path)
+    host        = self.public_ip
   }
 }
 
