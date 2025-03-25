@@ -1,3 +1,8 @@
+output "jumphost_id" {
+  description = "ID of the jumphost instance"
+  value       = aws_instance.jumphost.id
+}
+
 output "elasticsearch1_id" {
   description = "ID of the first Elasticsearch instance"
   value       = aws_instance.elasticsearch1.id
