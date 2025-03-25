@@ -131,14 +131,35 @@ pipeline {
                 expression { env.INSTALL_ACTION == 'Install' }
             }
             steps {
-                sh '''
-                cd ansible
-                # Use python3 to explicitly execute the inventory script
-                ansible all -i dynamic_inventory.py -m raw -a "apt update -y && apt install -y python3 python3-pip python3-six" --become
-                
-                # Verify Python installation
-                ansible all -i dynamic_inventory.py -m raw -a "python3 --version && pip3 --version" --become
-                '''
+                script {
+                    // First verify SSH connectivity
+                    def hosts = sh(script: '''
+                        cd ansible
+                        python3 dynamic_inventory.py --list | jq -r '.elasticsearch.hosts[]'
+                    ''', returnStdout: true).trim().split('\n')
+                    
+                    hosts.each { host ->
+                        retry(3) {
+                            timeout(time: 2, unit: 'MINUTES') {
+                                sh """
+                                echo "Testing SSH connection to ${host}..."
+                                ssh-keyscan ${host} >> ~/.ssh/known_hosts
+                                nc -zv -w 5 ${host} 22
+                                """
+                            }
+                        }
+                    }
+                    
+                    // Now run the installation
+                    sh '''
+                    cd ansible
+                    ansible all -i dynamic_inventory.py -m raw -a "apt update -y && apt install -y python3 python3-pip python3-six" --become \
+                      -e "ansible_ssh_private_key_file=~/.ssh/your-key.pem" \
+                      -e "ansible_user=ubuntu" \
+                      -u ubuntu \
+                      --private-key=~/.ssh/your-key.pem
+                    '''
+                }
             }
         }
 
