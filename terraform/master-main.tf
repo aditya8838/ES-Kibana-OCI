@@ -60,7 +60,6 @@ module "ec2" {
   source            = "./modules/ec2"
   ami_id            = "ami-06b6e5225d1db5f46" # Ubuntu 22.04 LTS
   instance_type     = "t2.medium"
-  key_name          = "testkey"
   public_subnet1_id = module.subnet.public_subnet1_id
   private_subnet1_id = module.subnet.private_subnet1_id
   private_subnet2_id = module.subnet.private_subnet2_id
