@@ -39,8 +39,8 @@ variable "k_sg_id" {
 }
 
 variable "key_name" {
-  default = "project-psql-key"
+  default = "testkey"
 }
 variable "key_file_path" {
-  default = "/var/lib/jenkins/workspace/project-psql-key.pem"
+  default = "/var/lib/jenkins/workspace/testkey.pem"
 }
