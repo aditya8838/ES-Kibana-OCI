@@ -58,11 +58,13 @@ module "security_groups" {
 
 module "ec2" {
   source            = "./modules/ec2"
-  ami_id            = "ami-0eed9719f6b0e45ad" # Ubuntu 22.04 LTS
+  ami_id            = "ami-06b6e5225d1db5f46" # Ubuntu 22.04 LTS
   instance_type     = "t2.medium"
   key_name          = "testkey"
+  public_subnet1_id = module.subnet.public_subnet1_id
   private_subnet1_id = module.subnet.private_subnet1_id
   private_subnet2_id = module.subnet.private_subnet2_id
+  jumphost_sg_id     = module.security_groups.jumphost_sg_id
   elastic_sg_id     = module.security_groups.elastic_sg_id
   k_sg_id           = module.security_groups.k_sg_id
 }
