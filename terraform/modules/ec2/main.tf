@@ -1,5 +1,5 @@
 resource "aws_instance" "jumphost" {
-  ami                    = var.jumphost_ami_id
+  ami                    = var.ami_id
   instance_type          = var.instance_type
   key_name               = var.key_name
   subnet_id              = var.public_subnet1_id
