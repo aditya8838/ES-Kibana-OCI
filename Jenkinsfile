@@ -100,7 +100,7 @@ pipeline {
             }
             steps {
                 echo "⏳ Waiting for EC2 instances to be ready..."
-                sleep(time: 120, unit: 'SECONDS')
+                sleep(time: 60, unit: 'SECONDS')
             }
         }
 
@@ -111,7 +111,16 @@ pipeline {
             steps {
                 sh '''
                 cd ansible
-                ls -l dynamic_inventory.py  # Debugging: Ensure inventory file exists
+                # Install boto3 on Jenkins node first
+                pip3 install boto3 --quiet
+                
+                # Make sure inventory script is executable
+                chmod +x dynamic_inventory.py
+                
+                # Test the inventory script directly
+                python3 dynamic_inventory.py --list
+                
+                # Verify with ansible-inventory
                 ansible-inventory -i dynamic_inventory.py --list
                 '''
             }
@@ -124,7 +133,11 @@ pipeline {
             steps {
                 sh '''
                 cd ansible
-                ansible all -i dynamic_inventory.py -m raw -a "apt update -y && apt install -y python3 python3-six" --become
+                # Use python3 to explicitly execute the inventory script
+                ansible all -i dynamic_inventory.py -m raw -a "apt update -y && apt install -y python3 python3-pip python3-six" --become
+                
+                # Verify Python installation
+                ansible all -i dynamic_inventory.py -m raw -a "python3 --version && pip3 --version" --become
                 '''
             }
         }
@@ -136,7 +149,7 @@ pipeline {
             steps {
                 sh '''
                 cd ansible
-                ansible-playbook -i dynamic_inventory.py site.yml
+                ansible-playbook site.yml
                 '''
             }
         }
