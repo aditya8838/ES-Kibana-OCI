@@ -8,8 +8,8 @@ variable "instance_type" {
   type        = string
 }
 
-variable "key_name" {
-  description = "Key pair name for the EC2 instances"
+variable "jumphost_sg_id" {
+  description = "ID of the jumphost security group"
   type        = string
 }
 
