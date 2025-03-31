@@ -29,6 +29,12 @@ resource "aws_route_table" "private_rt" {
     nat_gateway_id = var.nat_gateway_id
   }
 
+  # New route for VPC peering
+  route {
+    cidr_block                = "10.0.0.0/16"  # Demo-VPC CIDR
+    vpc_peering_connection_id = var.peering_connection_id
+  }
+
   tags = {
     Name = "private-rt"
   }
