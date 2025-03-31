@@ -32,3 +32,8 @@ variable "private_subnet2_id" {
   description = "ID of the second private subnet"
   type        = string
 }
+
+variable "peering_connection_id" {
+  description = "ID of the VPC peering connection"
+  type        = string
+}
