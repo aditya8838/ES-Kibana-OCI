@@ -77,13 +77,8 @@ resource "aws_security_group" "elastic_sg" {
     from_port   = 9300
     to_port     = 9300
     protocol    = "tcp"
-    cidr_blocks = [
-      "${var.elasticsearch1_private_ip}/32",
-      "${var.elasticsearch2_private_ip}/32",
-      "${var.elasticsearch3_private_ip}/32",
-      "${var.elasticsearch4_private_ip}/32"
-    ]
-    description = "Elasticsearch node-to-node communication"
+    security_groups = [aws_security_group.elastic_sg.id] # Allow self-reference
+    description     = "Allow Elasticsearch node-to-node communication"
   }
 
   # Existing rules
