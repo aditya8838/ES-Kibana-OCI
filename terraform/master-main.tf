@@ -34,12 +34,12 @@ module "route_table" {
   private_subnet1_id = module.subnet.private_subnet1_id
   private_subnet2_id = module.subnet.private_subnet2_id
   peering_connection_id = module.peering_connection.project_peering_id
-  demo_vpc_id        = "vpc-0996ede71c3cf9ec2"  # Demo-VPC ID
+  demo_vpc_id        = "vpc-0996ede71c3cf9ec2"
 }
 
 module "peering_connection" {
   source          = "./modules/peering_connection"
-  requester_vpc_id = "vpc-0996ede71c3cf9ec2"  # Demo-VPC ID
+  requester_vpc_id = "vpc-0996ede71c3cf9ec2"
   accepter_vpc_id = module.vpc.vpc_id
   peering_name    = "project-peering"
 }
@@ -60,7 +60,7 @@ module "security_groups" {
 
 module "ec2" {
   source            = "./modules/ec2"
-  ami_id            = "ami-06b6e5225d1db5f46" # Ubuntu 22.04 LTS
+  ami_id            = "ami-06b6e5225d1db5f46"
   instance_type     = "t2.medium"
   public_subnet1_id = module.subnet.public_subnet1_id
   private_subnet1_id = module.subnet.private_subnet1_id
