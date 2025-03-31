@@ -25,20 +25,21 @@ module "nat_gateway" {
 }
 
 module "route_table" {
-  source            = "./modules/route_table"
-  vpc_id            = module.vpc.vpc_id
-  igw_id            = module.internet_gateway.project_igw_id
-  nat_gateway_id    = module.nat_gateway.project_natgw_id
-  public_subnet1_id = module.subnet.public_subnet1_id
-  public_subnet2_id = module.subnet.public_subnet2_id
+  source             = "./modules/route_table"
+  vpc_id             = module.vpc.vpc_id
+  igw_id             = module.internet_gateway.project_igw_id
+  nat_gateway_id     = module.nat_gateway.project_natgw_id
+  public_subnet1_id  = module.subnet.public_subnet1_id
+  public_subnet2_id  = module.subnet.public_subnet2_id
   private_subnet1_id = module.subnet.private_subnet1_id
   private_subnet2_id = module.subnet.private_subnet2_id
   peering_connection_id = module.peering_connection.project_peering_id
+  demo_vpc_id        = "vpc-0996ede71c3cf9ec2"  # Demo-VPC ID
 }
 
 module "peering_connection" {
   source          = "./modules/peering_connection"
-  requester_vpc_id = "vpc-0996ede71c3cf9ec2"
+  requester_vpc_id = "vpc-0996ede71c3cf9ec2"  # Demo-VPC ID
   accepter_vpc_id = module.vpc.vpc_id
   peering_name    = "project-peering"
 }
@@ -55,6 +56,10 @@ module "nacl" {
 module "security_groups" {
   source = "./modules/security_groups"
   vpc_id = module.vpc.vpc_id
+  elasticsearch1_private_ip = "192.168.1.10"  # Update with actual IPs
+  elasticsearch2_private_ip = "192.168.1.11"
+  elasticsearch3_private_ip = "192.168.1.12"
+  elasticsearch4_private_ip = "192.168.1.13"
 }
 
 module "ec2" {
