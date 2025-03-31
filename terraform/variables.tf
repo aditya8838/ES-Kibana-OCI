@@ -62,7 +62,7 @@ variable "alb_name" {
 variable "ami_id" {
   description = "AMI ID for the EC2 instances"
   type        = string
-  default     = "ami-0f5ee92e2d63afc18" # Ubuntu 22.04 LTS
+  default     = "ami-0f5ee92e2d63afc18"
 }
 
 variable "instance_type" {
