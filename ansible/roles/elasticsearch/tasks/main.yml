@@ -6,14 +6,6 @@
     update_cache: yes
   become: yes
 
-- name: Set JAVA_HOME environment variable
-  lineinfile:
-    path: /home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch
-    regexp: '^export JAVA_HOME='
-    line: 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64'
-    insertafter: '^#!\/bin\/bash'
-  become: yes
-
 - name: Download Elasticsearch
   get_url:
     url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.17-linux-x86_64.tar.gz
@@ -34,6 +26,14 @@
     owner: ubuntu
     group: ubuntu
     recurse: yes
+  become: yes
+
+- name: Set JAVA_HOME environment variable
+  lineinfile:
+    path: /home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch
+    regexp: '^export JAVA_HOME='
+    line: 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64'
+    insertafter: '^#!\/bin\/bash'
   become: yes
 
 - name: Set permissions for Elasticsearch config directory
