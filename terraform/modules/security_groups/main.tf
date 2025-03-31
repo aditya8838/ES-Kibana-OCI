@@ -72,16 +72,14 @@ resource "aws_security_group" "elastic_sg" {
   description = "Security group for Elasticsearch"
   vpc_id      = var.vpc_id
 
-  # Allow inter-node communication on port 9300
   ingress {
     from_port   = 9300
     to_port     = 9300
     protocol    = "tcp"
-    security_groups = [aws_security_group.elastic_sg.id] # Allow self-reference
-    description     = "Allow Elasticsearch node-to-node communication"
+    self        = true
+    description = "Allow Elasticsearch node-to-node communication"
   }
 
-  # Existing rules
   ingress {
     from_port       = 9200
     to_port         = 9200
