@@ -37,3 +37,8 @@ variable "peering_connection_id" {
   description = "ID of the VPC peering connection"
   type        = string
 }
+
+variable "demo_vpc_id" {
+  description = "ID of the Demo-VPC"
+  type        = string
+}
