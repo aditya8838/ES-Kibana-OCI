@@ -21,7 +21,7 @@ def generate_inventory():
     }
 
     es_instances = get_instances_by_tag('Name', 'elasticsearch*')
-    kibana_instances = get_instances_by_tag('Name', 'kibana')
+    kibana_instances = get_instances_by_tag('Name', 'kibana*')
 
     for instance in es_instances:
         inventory['elasticsearch']['hosts'].append(instance.private_ip_address)
