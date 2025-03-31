@@ -122,6 +122,9 @@ pipeline {
                 
                 # Verify with ansible-inventory
                 ansible-inventory -i dynamic_inventory.py --list
+
+                # Verify with ansible-inventory json
+                ./dynamic_inventory.py
                 '''
             }
         }
@@ -149,6 +152,7 @@ pipeline {
             steps {
                 sh '''
                 cd ansible
+                chmod +x dynamic_inventory.py
                 ansible-playbook site.yml
                 '''
             }
