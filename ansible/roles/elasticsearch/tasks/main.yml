@@ -48,6 +48,7 @@
     path: /home/ubuntu/elasticsearch-7.17.17/config/elasticsearch.keystore
     mode: '0600'
   become: yes
+  ignore_errors: yes
 
 - name: Configure Elasticsearch
   template:
