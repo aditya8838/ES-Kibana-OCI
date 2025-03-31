@@ -72,6 +72,21 @@ resource "aws_security_group" "elastic_sg" {
   description = "Security group for Elasticsearch"
   vpc_id      = var.vpc_id
 
+  # Allow inter-node communication on port 9300
+  ingress {
+    from_port   = 9300
+    to_port     = 9300
+    protocol    = "tcp"
+    cidr_blocks = [
+      "${var.elasticsearch1_private_ip}/32",
+      "${var.elasticsearch2_private_ip}/32",
+      "${var.elasticsearch3_private_ip}/32",
+      "${var.elasticsearch4_private_ip}/32"
+    ]
+    description = "Elasticsearch node-to-node communication"
+  }
+
+  # Existing rules
   ingress {
     from_port       = 9200
     to_port         = 9200
@@ -111,8 +126,8 @@ resource "aws_security_group" "k_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port       = 5600
-    to_port         = 5600
+    from_port       = 5601
+    to_port         = 5601
     protocol        = "tcp"
     security_groups = [aws_security_group.lb_sg.id, aws_security_group.jumphost_sg.id]
   }
