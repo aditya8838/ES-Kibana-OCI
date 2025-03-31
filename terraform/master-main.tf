@@ -56,10 +56,6 @@ module "nacl" {
 module "security_groups" {
   source = "./modules/security_groups"
   vpc_id = module.vpc.vpc_id
-  elasticsearch1_private_ip = "192.168.1.10"  # Update with actual IPs
-  elasticsearch2_private_ip = "192.168.1.11"
-  elasticsearch3_private_ip = "192.168.1.12"
-  elasticsearch4_private_ip = "192.168.1.13"
 }
 
 module "ec2" {
