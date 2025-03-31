@@ -33,6 +33,7 @@ module "route_table" {
   public_subnet2_id = module.subnet.public_subnet2_id
   private_subnet1_id = module.subnet.private_subnet1_id
   private_subnet2_id = module.subnet.private_subnet2_id
+  peering_connection_id = module.peering_connection.project_peering_id
 }
 
 module "peering_connection" {
