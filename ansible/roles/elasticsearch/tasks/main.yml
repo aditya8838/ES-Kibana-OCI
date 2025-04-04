@@ -58,23 +58,6 @@
     group: ubuntu
     mode: '0644'
 
-# New tasks for vm.max_map_count configuration
-- name: Ensure vm.max_map_count is set temporarily
-  command: sysctl -w vm.max_map_count=262144
-  become: yes
-
-- name: Permanently set vm.max_map_count in sysctl.conf
-  lineinfile:
-    path: /etc/sysctl.conf
-    line: "vm.max_map_count=262144"
-    state: present
-    insertafter: EOF
-  become: yes
-
-- name: Apply sysctl changes
-  command: sysctl -p
-  become: yes
-
 - name: Start Elasticsearch
   shell: nohup /home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch &
   args:
