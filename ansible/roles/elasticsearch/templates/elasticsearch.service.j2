@@ -1,0 +1,15 @@
+[Unit]
+Description=Elasticsearch
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/elasticsearch-7.17.17
+Environment="ES_JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
+ExecStart=/home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch
+Restart=always
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
