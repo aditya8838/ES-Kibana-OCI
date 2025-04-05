@@ -1,7 +1,7 @@
 ---
-- name: Install Java
+- name: Install Java 11
   apt:
-    name: openjdk-8-jdk
+    name: openjdk-11-jdk
     state: present
     update_cache: yes
   become: yes
@@ -20,7 +20,7 @@
     group: ubuntu
     mode: '0755'
 
-- name: Set ownership for Elasticsearch directory
+- name: Set ownership for Elasticsearch directory (recursive)
   file:
     path: /home/ubuntu/elasticsearch-7.17.17
     owner: ubuntu
@@ -28,27 +28,40 @@
     recurse: yes
   become: yes
 
-- name: Set JAVA_HOME environment variable
-  lineinfile:
-    path: /home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch
-    regexp: '^export JAVA_HOME='
-    line: 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64'
-    insertafter: '^#!\/bin\/bash'
+- name: Create logs directory
+  file:
+    path: /home/ubuntu/elasticsearch-7.17.17/logs
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0750'
   become: yes
 
 - name: Set permissions for Elasticsearch config directory
   file:
     path: /home/ubuntu/elasticsearch-7.17.17/config
-    mode: '0755'
+    mode: '0750'
     recurse: yes
+    owner: ubuntu
+    group: ubuntu
   become: yes
 
-- name: Set permissions for Elasticsearch keystore
+- name: Set permissions for Elasticsearch keystore (if exists)
   file:
     path: /home/ubuntu/elasticsearch-7.17.17/config/elasticsearch.keystore
     mode: '0600'
+    owner: ubuntu
+    group: ubuntu
   become: yes
   ignore_errors: yes
+
+- name: Set ES_JAVA_HOME in elasticsearch file
+  lineinfile:
+    path: /home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch
+    regexp: '^export ES_JAVA_HOME='
+    line: 'export ES_JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64'
+    insertafter: '^#!\/bin\/bash'
+  become: yes
 
 - name: Configure Elasticsearch
   template:
@@ -58,8 +71,52 @@
     group: ubuntu
     mode: '0644'
 
-- name: Start Elasticsearch
-  shell: nohup /home/ubuntu/elasticsearch-7.17.17/bin/elasticsearch &
-  args:
-    chdir: /home/ubuntu/elasticsearch-7.17.17
+# System configuration for Elasticsearch
+- name: Ensure vm.max_map_count is set temporarily
+  command: sysctl -w vm.max_map_count=262144
   become: yes
+
+- name: Permanently set vm.max_map_count in sysctl.conf
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: "vm.max_map_count=262144"
+    state: present
+    insertafter: EOF
+  become: yes
+
+- name: Apply sysctl changes
+  command: sysctl -p
+  become: yes
+
+# Recommended: Use systemd service instead of nohup
+- name: Create systemd service for Elasticsearch
+  template:
+    src: elasticsearch.service.j2
+    dest: /etc/systemd/system/elasticsearch.service
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify:
+    - reload systemd
+    - enable elasticsearch
+    - start elasticsearch
+
+# Handlers for systemd service
+handlers:
+  - name: reload systemd
+    systemd:
+      daemon_reload: yes
+    become: yes
+
+  - name: enable elasticsearch
+    systemd:
+      name: elasticsearch
+      enabled: yes
+    become: yes
+
+  - name: start elasticsearch
+    systemd:
+      name: elasticsearch
+      state: started
+    become: yes
